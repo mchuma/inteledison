@@ -9,7 +9,7 @@
 @section JavaScript{
     <script>
         $(function () {
-            var myHubProxy = $.connection.monitorHub;
+            var myHubProxy = $.connection.monitorHub;  
             myHubProxy.client.showMessageOnClient = function (data) {
                 $('#mySpanTag').val(data);
             };
