@@ -1,0 +1,26 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+<input type="button" id="cmdRefresh" value="Refresh"/><br />
+<textarea id="mySpanTag" style="height:100px;"></textarea>
+
+@section JavaScript{
+    <script>
+        $(function () {
+            var myHubProxy = $.connection.monitorHub;
+            myHubProxy.client.showMessageOnClient = function (data) {
+                $('#mySpanTag').val(data);
+            };
+
+            $.connection.hub.start(function () {
+                myHubProxy.server.sendMessage("Hello World!");
+            });
+
+            $('#cmdRefresh').click(function () {
+                myHubProxy.server.refreshData();
+            });
+        });
+    </script>
+}
