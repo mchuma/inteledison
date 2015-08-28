@@ -1,19 +1,17 @@
 #include <WiFi.h>
 #include <SPI.h>
 #include <Ethernet.h>
-//#include <Process.h>
 
 char ssid[] = "EleksPublic";     // the name of your network
 int status = WL_IDLE_STATUS;     // the Wifi radio's status
 const char *server="inteledisoneventhub-ns.servicebus.windows.net";
-const char *sas = "SharedAccessSignature sr=https%3a%2f%2finteledisoneventhub-ns.servicebus.windows.net%2fedisoneventhub%2fpublishers%2f1%2fmessages&sig=j0uKam0DGRWZTyT3o3x4ee%2fECkyEj%2bg%2bUEjfm%2bKWe%2fU%3d&se=1440689199&skn=SendReceiveRule";
-const char *serviceNamespace = "inteledisoneventHub-ns";
+const char *sas = "SharedAccessSignature sr=https%3a%2f%2finteledisoneventhub-ns.servicebus.windows.net%2fedisoneventhub%2fpublishers%2f1%2fmessages&sig=1yqSTacHLmupUxkoo4fECw0uSdLuet4l%2bjbBcAkEhco%3d&se=1440759240&skn=SendReceiveRule";
+const char *serviceNamespace = "inteledisoneventhub-ns";
 const char *hubName = "edisoneventhub";
 const char *deviceName = "1";
 
 EthernetClient client;
-//Process proc;
-char buffer[64];
+char buffer[256];
 
 void setup() {
   //Initialize serial and wait for port to open:
@@ -39,7 +37,7 @@ void setup() {
   while ( status != WL_CONNECTED) {  
      // scan for existing networks:
      Serial.println("Scanning available networks...");
-     //listNetworks();
+     listNetworks();
    
     Serial.print("Attempting to connect to open SSID: ");
     Serial.println(ssid);
@@ -62,8 +60,8 @@ void loop() {
  // printCurrentNet();
   send_requestAzureEventHub(777);
   wait_responseAzureEventHub();
-  //read_responseAzureEventHub();
-  //end_requestAzureEventHub();
+  read_responseAzureEventHub();
+  end_requestAzureEventHub();
 }
 
 void printWifiData() {
@@ -196,41 +194,43 @@ Serial.print("sending ");
 Serial.println(value);
 
 // POST URI
-sprintf(buffer, "POST /eventhubtest1/publishers/%s/messages HTTP/1.1", deviceName);
+
+sprintf(buffer, "POST /edisoneventhub/publishers/%s/messages HTTP/1.1", deviceName);
 client.println(buffer);
 
-Serial.println("posted device name ");
+Serial.println(buffer);
 
 // Host header
 sprintf(buffer, "Host: %s", server);
 client.println(buffer);
-
-Serial.println("posted server ");
+Serial.println(buffer);
 
 // Application key
 sprintf(buffer, "Authorization: %s", sas);
 client.println(buffer);
-
-Serial.println("posted sas ");
+Serial.println(buffer);
 
 // content type
 client.println("Content-Type: application/atom+xml;type=entry;charset=utf-8");
+Serial.println("Content-Type: application/atom+xml;type=entry;charset=utf-8");
 
-Serial.println("posted content type ");
 // POST body
-sprintf(buffer, "{\"value\": %s}", "Hello World");
-
-Serial.println("posted  body ");
+sprintf(buffer, "{\"value\": %s}", "Hello World from Edison");
 // Content length
 client.print("Content-Length: ");
+Serial.println("Content-Length: ");
 client.println(strlen(buffer));
+Serial.println(strlen(buffer));
+
 
 // End of headers
 client.println();
-
+Serial.println();
 // Request body
 client.println(buffer);
-Serial.print("sending finished");
+Serial.println(buffer);
+
+Serial.println("sending finished");
 } else {
 Serial.println("connection failed");
 }
@@ -256,14 +256,14 @@ return;
 void read_responseAzureEventHub()
 {
 bool print = true;
-
+Serial.println("printing responce... ");
 while (client.available()) {
 char c = client.read();
 // Print only until the first carriage return
 if (c == '\n'){
 print = false;
 }
-Serial.print("printing responce... ");
+
 if (print)
 Serial.print(c);
 }
