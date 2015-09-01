@@ -10,49 +10,24 @@ namespace EdisonMonitor
 {
 	public class MonitorHub : Hub
 	{
-        public static List<string> Messages { get; set; }
+        EventProcessorHost eventProcessorHost;
 
-        public void SendMessage(string message)
+        public void Start()
         {
-            //RefreshData();
-            // Call the broadcastMessage method to update clients.
-            Clients.All.showMessageOnClient(message);  //GetMessageText());
-        }
-
-        public void RefreshData()
-        {
-            Messages = new List<string>();
-            string eventHubConnectionString = "Endpoint=sb://myhubed-ns.servicebus.windows.net/;SharedAccessKeyName=SendReceiveRule;SharedAccessKey=hGRlK8cfxw/nU0SoH/egwJbg33BiUAi6b40P0uu9qNU=";
-            string eventHubName = "myhub";
-            string storageAccountName = "edisoneventhubstorage";
-            string storageAccountKey = "wH/HCkHLoPH93xCZwFMR4V4OZE7nbmps1+sFaqutt1mhBjdVdWd+ECuo+c0GbmhB9RsOxFiCB4XEsxoizMksAw==";
-            string storageConnectionString = string.Format("DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}",
-            storageAccountName, storageAccountKey);
-
             string eventProcessorHostName = Guid.NewGuid().ToString();
-            EventProcessorHost eventProcessorHost = new EventProcessorHost(eventProcessorHostName, eventHubName, EventHubConsumerGroup.DefaultGroupName, eventHubConnectionString, storageConnectionString);
-            var a = eventProcessorHost.RegisterEventProcessorAsync<SimpleEventProcessor>();
-            if (!a.IsCompleted)
-            {
-                Clients.All.showMessageOnClient("Waiting..." + DateTime.Now.ToString());
-                Thread.Sleep(1000);
+            eventProcessorHost = new EventProcessorHost(eventProcessorHostName, Config.EVENT_HUB_NAME, 
+                EventHubConsumerGroup.DefaultGroupName, Config.EVENT_HUB_CONNECTION_STRING, Config.GetStorageConnectionString());
+            SimpleEventProcessor.Clients = this.Clients;
 
-            }
-            Clients.All.showMessageOnClient(GetMessageText() + DateTime.Now.ToString());
+            var a = eventProcessorHost.RegisterEventProcessorAsync<SimpleEventProcessor>();
         }
 
-        private string GetMessageText()
+        public void Stop()
         {
-            string result = "abc";
-            if (SimpleEventProcessor.Messages != null && SimpleEventProcessor.Messages.Count > 0)
+            if (eventProcessorHost != null)
             {
-                foreach (var messageItem in SimpleEventProcessor.Messages)
-                {
-                    result += messageItem + Environment.NewLine;
-                }
+                eventProcessorHost.UnregisterEventProcessorAsync().Wait();
             }
-
-            return result;
         }
     }
 }

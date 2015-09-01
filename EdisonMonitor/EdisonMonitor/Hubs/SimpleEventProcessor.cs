@@ -5,17 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.ServiceBus.Messaging;
 using System.Diagnostics;
+using Microsoft.AspNet.SignalR.Hubs;
 
 namespace EdisonMonitor
 {
     public class SimpleEventProcessor : IEventProcessor
     {
         Stopwatch checkpointStopWatch;
-        public static List<string> Messages;
+        private static List<string> Messages;
+        public static IHubCallerConnectionContext<dynamic> Clients;
 
         public async Task CloseAsync(PartitionContext context, CloseReason reason)
         {
-            //Console.WriteLine(string.Format("Processor Shuting Down. Partition ‘{0}’, Reason: ‘{1}’.", context.Lease.PartitionId, reason.ToString()));
             if (reason == CloseReason.Shutdown)
             {
                 await context.CheckpointAsync();
@@ -24,7 +25,6 @@ namespace EdisonMonitor
 
         public Task OpenAsync(PartitionContext context)
         {
-            //Console.WriteLine(string.Format("SimpleEventProcessor initialize. Partition: ‘{0}’, Offset: ‘{1}'", context.Lease.PartitionId, context.Lease.Offset));
             this.checkpointStopWatch = new Stopwatch();
             this.checkpointStopWatch.Start();
             return Task.FromResult<object>(null);
@@ -41,11 +41,16 @@ namespace EdisonMonitor
             {
                 string data = Encoding.UTF8.GetString(eventData.GetBytes());
                 Messages.Add(data);
-                //Console.WriteLine(string.Format("Message received. Partition: ‘{0}’, Data: ‘{1}'", context.Lease.PartitionId, data));
+
+            }
+
+            if (Messages.Count > 0 && Clients != null)
+            {
+                Clients.All.showMessageOnClient(GetMessageText());
             }
 
             //Call checkpoint every 5 minutes, so that worker can resume processing from the 5 minutes back if it restarts.
-            if (this.checkpointStopWatch.Elapsed > TimeSpan.FromMinutes(2))
+            if (this.checkpointStopWatch.Elapsed > TimeSpan.FromMinutes(5))
             {
                 await context.CheckpointAsync();
                 lock (this)
@@ -53,6 +58,20 @@ namespace EdisonMonitor
                     this.checkpointStopWatch.Reset();
                 }
             }
+        }
+
+        private string GetMessageText()
+        {
+            string result = "";
+            if (Messages != null && Messages.Count > 0)
+            {
+                foreach (var messageItem in Messages)
+                {
+                    result += messageItem + Environment.NewLine;
+                }
+            }
+
+            return result;
         }
 
     }

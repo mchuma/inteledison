@@ -6,11 +6,19 @@
     <div class="jumbotron">
         <h2>EventHub monitor</h2>
     </div>
-    
-    <div><input type="button" id="cmdRefresh" class="btn btn-info" value="Refresh" /></div>
-    <div>
-        <br>
-        <textarea class="form-control" style="height:100px;" id="mySpanTag"></textarea>
+    <div class="row">
+        <div class="col-sm-6">
+            <input type="button" id="cmdStop" class="btn btn-danger" value="Stop" />
+        </div>
+        <div class="col-sm-6">
+            @*<input type="button" id="cmdPing" class="btn btn-warning pull-right" value="Ping intel edison device" />*@
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <br />
+            <textarea class="form-control" style="height:100px;" id="mySpanTag"></textarea>
+        </div>
     </div>
 </div>
 
@@ -24,12 +32,14 @@
             };
 
             $.connection.hub.start(function () {
-                myHubProxy.server.sendMessage("Hello World!");
+                $('#mySpanTag').val("Receiving should start soon. Please wait a minute...");
+                myHubProxy.server.start();
             });
 
-            $('#cmdRefresh').click(function () {
-                myHubProxy.server.refreshData();
+            $('#cmdStop').click(function () {
+                myHubProxy.server.stop();
             });
+
         });
     </script>
 }
