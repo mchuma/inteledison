@@ -16,14 +16,14 @@ namespace EdisonMonitor
         {
             //RefreshData();
             // Call the broadcastMessage method to update clients.
-            Clients.All.showMessageOnClient(message  + DateTime.Now.ToString());  //GetMessageText());
+            Clients.All.showMessageOnClient(message);  //GetMessageText());
         }
 
         public void RefreshData()
         {
             Messages = new List<string>();
-            string eventHubConnectionString = "Endpoint=sb://inteledisoneventhub-ns.servicebus.windows.net/;SharedAccessKeyName=SendReceiveRule;SharedAccessKey=29SkhvIFngQqIJ8Cv9Lz0Luo+EFVsyZYIycUNaB3ffM=";
-            string eventHubName = "edisoneventhub";
+            string eventHubConnectionString = "Endpoint=sb://myhubed-ns.servicebus.windows.net/;SharedAccessKeyName=SendReceiveRule;SharedAccessKey=hGRlK8cfxw/nU0SoH/egwJbg33BiUAi6b40P0uu9qNU=";
+            string eventHubName = "myhub";
             string storageAccountName = "edisoneventhubstorage";
             string storageAccountKey = "wH/HCkHLoPH93xCZwFMR4V4OZE7nbmps1+sFaqutt1mhBjdVdWd+ECuo+c0GbmhB9RsOxFiCB4XEsxoizMksAw==";
             string storageConnectionString = string.Format("DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}",
