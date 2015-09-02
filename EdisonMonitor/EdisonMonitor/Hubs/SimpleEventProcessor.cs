@@ -14,11 +14,13 @@ namespace EdisonMonitor
         Stopwatch checkpointStopWatch;
         private static List<string> Messages;
         public static IHubCallerConnectionContext<dynamic> Clients;
+        public static EventProcessorHost Host;
 
         public async Task CloseAsync(PartitionContext context, CloseReason reason)
         {
             if (reason == CloseReason.Shutdown)
             {
+                Clients.All.showMessageOnClient("XClose");
                 await context.CheckpointAsync();
             }
         }

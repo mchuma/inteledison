@@ -26,18 +26,32 @@
 @section JavaScript{
     <script>
         $(function () {
+            var welcomeMessage = "Receiving should start soon. Please wait a little, it can take up to minute...";
+            var closingMessage = "Closing... Refresh page (F5) to start receiving once more.";
             var myHubProxy = $.connection.monitorHub;
+
+            $("#cmdStop").prop("disabled", true);
+
             myHubProxy.client.showMessageOnClient = function (data) {
                 $('#mySpanTag').val(data);
+                if ($('#mySpanTag').val() == 'XClose') {
+                    $('#mySpanTag').val(closingMessage);
+                }
+                if ($('#mySpanTag').val() != welcomeMessage && $('#mySpanTag').val() != closingMessage) {
+                    $("#cmdStop").prop("disabled", false);
+                }
             };
-
+        
+            
             $.connection.hub.start(function () {
-                $('#mySpanTag').val("Receiving should start soon. Please wait a minute...");
+                $('#mySpanTag').val(welcomeMessage);
                 myHubProxy.server.start();
             });
 
+
             $('#cmdStop').click(function () {
                 myHubProxy.server.stop();
+                $("#cmdStop").prop("disabled", true);
             });
 
         });

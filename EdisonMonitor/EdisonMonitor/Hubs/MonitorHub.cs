@@ -18,6 +18,7 @@ namespace EdisonMonitor
             eventProcessorHost = new EventProcessorHost(eventProcessorHostName, Config.EVENT_HUB_NAME, 
                 EventHubConsumerGroup.DefaultGroupName, Config.EVENT_HUB_CONNECTION_STRING, Config.GetStorageConnectionString());
             SimpleEventProcessor.Clients = this.Clients;
+            SimpleEventProcessor.Host = eventProcessorHost;
 
             var a = eventProcessorHost.RegisterEventProcessorAsync<SimpleEventProcessor>();
         }
@@ -26,7 +27,11 @@ namespace EdisonMonitor
         {
             if (eventProcessorHost != null)
             {
-                eventProcessorHost.UnregisterEventProcessorAsync().Wait();
+                eventProcessorHost.UnregisterEventProcessorAsync();
+            }
+            else if (SimpleEventProcessor.Host != null)
+            {
+                SimpleEventProcessor.Host.UnregisterEventProcessorAsync();
             }
         }
     }
