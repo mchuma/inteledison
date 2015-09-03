@@ -11,7 +11,7 @@
             <input type="button" id="cmdStop" class="btn btn-danger" value="Stop" />
         </div>
         <div class="col-sm-6">
-            @*<input type="button" id="cmdPing" class="btn btn-warning pull-right" value="Ping intel edison device" />*@
+            <input type="button" id="cmdClear" class="btn btn-warning pull-right" value="Clear text" />
         </div>
     </div>
     <div class="row">
@@ -33,12 +33,18 @@
             $("#cmdStop").prop("disabled", true);
 
             myHubProxy.client.showMessageOnClient = function (data) {
-                $('#mySpanTag').val(data);
+                var newData = $('#mySpanTag').val();
+                if (newData == welcomeMessage) {
+                    newData = '';
+                }
+                newData = newData + data;
+                $('#mySpanTag').val(newData);
                 if ($('#mySpanTag').val() == 'XClose') {
                     $('#mySpanTag').val(closingMessage);
                 }
                 if ($('#mySpanTag').val() != welcomeMessage && $('#mySpanTag').val() != closingMessage) {
                     $("#cmdStop").prop("disabled", false);
+                    $("#cmdClear").prop("disabled", false);
                 }
             };
         
@@ -52,6 +58,11 @@
             $('#cmdStop').click(function () {
                 myHubProxy.server.stop();
                 $("#cmdStop").prop("disabled", true);
+            });
+
+            $('#cmdClear').click(function () {
+                $('#mySpanTag').val('');
+                $("#cmdClear").prop("disabled", true);
             });
 
         });

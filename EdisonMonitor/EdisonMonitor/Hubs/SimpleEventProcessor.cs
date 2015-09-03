@@ -12,7 +12,7 @@ namespace EdisonMonitor
     public class SimpleEventProcessor : IEventProcessor
     {
         Stopwatch checkpointStopWatch;
-        private static List<string> Messages;
+        private static List<string> MessagesReceived;
         public static IHubCallerConnectionContext<dynamic> Clients;
         public static EventProcessorHost Host;
 
@@ -34,19 +34,14 @@ namespace EdisonMonitor
 
         public async Task ProcessEventsAsync(PartitionContext context, IEnumerable<EventData> messages)
         {
-            if (Messages == null || Messages.Count() == 0)
-            {
-                Messages = new List<string>();
-            }
-
+            MessagesReceived = new List<string>();
             foreach (EventData eventData in messages)
             {
                 string data = Encoding.UTF8.GetString(eventData.GetBytes());
-                Messages.Add(data);
-
+                MessagesReceived.Add(data);
             }
 
-            if (Messages.Count > 0 && Clients != null)
+            if (MessagesReceived.Count > 0 && Clients != null)
             {
                 Clients.All.showMessageOnClient(GetMessageText());
             }
@@ -65,9 +60,9 @@ namespace EdisonMonitor
         private string GetMessageText()
         {
             string result = "";
-            if (Messages != null && Messages.Count > 0)
+            if (MessagesReceived != null && MessagesReceived.Count > 0)
             {
-                foreach (var messageItem in Messages)
+                foreach (var messageItem in MessagesReceived)
                 {
                     result += messageItem + Environment.NewLine;
                 }

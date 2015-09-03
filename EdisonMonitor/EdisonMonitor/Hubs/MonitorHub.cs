@@ -20,7 +20,7 @@ namespace EdisonMonitor
             SimpleEventProcessor.Clients = this.Clients;
             SimpleEventProcessor.Host = eventProcessorHost;
 
-            var a = eventProcessorHost.RegisterEventProcessorAsync<SimpleEventProcessor>();
+            eventProcessorHost.RegisterEventProcessorAsync<SimpleEventProcessor>();
         }
 
         public void Stop()
