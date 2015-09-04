@@ -31,6 +31,7 @@
             var myHubProxy = $.connection.monitorHub;
 
             $("#cmdStop").prop("disabled", true);
+            $("#cmdClear").prop("disabled", true);
 
             myHubProxy.client.showMessageOnClient = function (data) {
                 var newData = $('#mySpanTag').val();
