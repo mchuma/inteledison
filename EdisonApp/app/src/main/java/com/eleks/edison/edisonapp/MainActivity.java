@@ -3,22 +3,34 @@ package com.eleks.edison.edisonapp;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
+import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,19 +42,46 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
+        final Button button = (Button) findViewById(R.id.button);
+        Boolean conn = checkInternetConnection();
+        button.setEnabled(conn);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                try {
+                    request("blink");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        final Button button2 = (Button) findViewById(R.id.button2);
+        button2.setEnabled(conn);
+
+        button2.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                try {
+                    request("shutdown");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         ToggleButton toggle = (ToggleButton) findViewById(R.id.toggleButton);
+        toggle.setEnabled(conn);
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     try {
-                        int code = HttpRequest("https://www.google.com.ua/");
+                        request("startlogging");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-
                 } else {
                     try {
-                        int code = HttpRequest("https://www.yandex.com.ua/");
+                        request("stoplogging");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -60,65 +99,54 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_exit:
+                android.os.Process.killProcess(android.os.Process.myPid());
+                System.exit(1);
+            case R.id.action_settings:
+                Intent myIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                MainActivity.this.startActivity(myIntent);
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
-    // Given a URL, establishes an HttpUrlConnection and retrieves
-// the web page content as a InputStream, which it returns as
-// a string.
-    private int HttpRequest(String myurl) throws IOException {
-        ConnectivityManager connMgr = (ConnectivityManager)
-                getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-////        if (networkInfo != null && networkInfo.isConnected()) {
-//            URL url = new URL(myurl);
-//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//            conn.setReadTimeout(10000 /* milliseconds */);
-//            conn.setConnectTimeout(15000 /* milliseconds */);
-//            conn.setRequestMethod("GET");
-//        conn.setDoInput(true);
-//            // Starts the query
-//            conn.connect();
-//            int response = conn.getResponseCode();
-//            //return response;
-//        //} else {
-        //
-        checkInternetConnection();
-//       // }
-
-        return 0;
+    private void request(String cmd) throws IOException {
+        try {
+            Socket socket = new Socket("172.19.17.17", 5005);
+            String str = cmd;
+            PrintWriter out = new PrintWriter(new BufferedWriter(
+                    new OutputStreamWriter(socket.getOutputStream())), true);
+            out.println(str);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     //check Internet connection.
-    private void checkInternetConnection() {
-        ConnectivityManager check = (ConnectivityManager) this.getApplicationContext().
-                getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (check != null) {
-            NetworkInfo[] info = check.getAllNetworkInfo();
-            if (info != null)
-                for (int i = 0; i < info.length; i++)
-                    if (info[i].getState() == NetworkInfo.State.CONNECTED) {
-                        showMessage("Connected to the Internet");
-                    }
+    private Boolean checkInternetConnection() {
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        if (mWifi.isConnected()) {
+            WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            WifiInfo info = wifiManager.getConnectionInfo();
+            info.getBSSID();
+            showMessage("Connected to " + info.getSSID());
+            return true;
         } else {
-            showMessage("No Internet Connection!");
+            showMessage("No WIFI connection");
+            return false;
         }
     }
 
     private void showMessage(String text) {
         Context context = getApplicationContext();
         int duration = Toast.LENGTH_SHORT;
-
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
     }
