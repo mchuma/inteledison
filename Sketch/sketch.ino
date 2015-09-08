@@ -5,7 +5,7 @@
 char ssid[] = "EleksPublic";     // the name of your network
 int status = WL_IDLE_STATUS;     // the Wifi radio's status
 const char *server="inteledisoneventhub-ns.servicebus.windows.net";
-const char *sas = "SharedAccessSignature sr=https%3a%2f%2finteledisoneventhub-ns.servicebus.windows.net%2fedisoneventhub%2fpublishers%2f1%2fmessages&sig=1yqSTacHLmupUxkoo4fECw0uSdLuet4l%2bjbBcAkEhco%3d&se=1440759240&skn=SendReceiveRule";
+const char *sas = "SharedAccessSignature sr=https%3a%2f%2finteledisoneventhub-ns.servicebus.windows.net%2fedisoneventhub%2fpublishers%2f1%2fmessages&sig=RDcIvcvKo3NRTXoli2cZORS2qPy%2bwB0987nOTj%2b3nHw%3d&se=1440771592&skn=SendReceiveRule";
 const char *serviceNamespace = "inteledisoneventhub-ns";
 const char *hubName = "edisoneventhub";
 const char *deviceName = "1";
@@ -186,15 +186,14 @@ void listNetworks() {
 
 void send_requestAzureEventHub(int value)
 {
-Serial.println("\nconnecting…");
+Serial.println("\nconnecting");
 
 if (client.connect(server, 80)) {
 
-Serial.print("sending ");
+Serial.print("sending");
 Serial.println(value);
 
 // POST URI
-
 sprintf(buffer, "POST /edisoneventhub/publishers/%s/messages HTTP/1.1", deviceName);
 client.println(buffer);
 
@@ -216,11 +215,10 @@ Serial.println("Content-Type: application/atom+xml;type=entry;charset=utf-8");
 
 // POST body
 sprintf(buffer, "{\"value\": %s}", "Hello World from Edison");
+
 // Content length
 client.print("Content-Length: ");
-Serial.println("Content-Length: ");
 client.println(strlen(buffer));
-Serial.println(strlen(buffer));
 
 
 // End of headers

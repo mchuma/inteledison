@@ -8,18 +8,32 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textPostalAddress"
-        android:ems="10"
-        android:id="@+id/editText2"
+        android:id="@+id/editText"
+        android:layout_marginTop="99dp"
+        android:editable="true"
+        android:enabled="true"
+        android:focusable="true"
+        android:minWidth="200dp"
+        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SAVE"
+        android:id="@+id/button3"
+        android:layout_below="@+id/editText2"
+        android:layout_alignRight="@+id/editText2"
+        android:layout_alignEnd="@+id/editText2"
+        android:layout_marginTop="82dp" />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textPassword"
-        android:ems="10"
-        android:id="@+id/editText"
+        android:id="@+id/editText2"
         android:layout_centerVertical="true"
-        android:layout_alignRight="@+id/editText2"
-        android:layout_alignEnd="@+id/editText2" />
+        android:layout_centerHorizontal="true"
+        android:numeric="integer"
+        android:minWidth="100dp" />
+
 </RelativeLayout>
