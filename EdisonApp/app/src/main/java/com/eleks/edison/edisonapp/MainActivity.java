@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -34,11 +35,18 @@ import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity {
 
+    String IP;
+    String Port;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        IP = getSharedPreferences("ConnectionConfigs", Context.MODE_PRIVATE).getString("IP", "172.19.17.140");
+        Port = getSharedPreferences("ConnectionConfigs", Context.MODE_PRIVATE).getString("Port", "5005");
+        showMessage("IP: " + IP);
+        showMessage("Port: " + Port);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -46,13 +54,39 @@ public class MainActivity extends AppCompatActivity {
         Boolean conn = checkInternetConnection();
         button.setEnabled(conn);
 
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                try {
-                    request("blink");
-                } catch (IOException e) {
-                    e.printStackTrace();
+        button.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+
+                    case MotionEvent.ACTION_DOWN:
+                        v.setPressed(true);
+                        try {
+                            request("led-on");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_OUTSIDE:
+                    case MotionEvent.ACTION_CANCEL:
+                        v.setPressed(false);
+                        try {
+                            request("led-off");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case MotionEvent.ACTION_POINTER_DOWN:
+                        break;
+                    case MotionEvent.ACTION_POINTER_UP:
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        break;
                 }
+
+                return true;
             }
         });
 
@@ -69,22 +103,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ToggleButton toggle = (ToggleButton) findViewById(R.id.toggleButton);
-        toggle.setEnabled(conn);
-        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    try {
-                        request("startlogging");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    try {
-                        request("stoplogging");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+        final Button button4  = (Button) findViewById(R.id.button4);
+        button4.setEnabled(conn);
+        button4.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                try {
+                    request("logging");
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -113,11 +139,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void request(String cmd) throws IOException {
         try {
-            Socket socket = new Socket("172.19.17.17", 5005);
+
+            Socket socket = new Socket(IP, Integer.parseInt(Port));
             String str = cmd;
             PrintWriter out = new PrintWriter(new BufferedWriter(
                     new OutputStreamWriter(socket.getOutputStream())), true);
             out.println(str);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
